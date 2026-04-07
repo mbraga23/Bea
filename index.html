@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastros – Cond. Garden</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --g1: #0d2b1f;
+    --g2: #164d35;
+    --g3: #1f7a52;
+    --g4: #39c47a;
+    --g5: #a8f0c6;
+    --gbg: #f2faf6;
+    --acc: #ff7043;
+    --w: #ffffff;
+    --t1: #0d1f18;
+    --t2: #3d5a4a;
+    --t3: #7a9e8e;
+    --bd: #d4e9dc;
+    --r: 14px;
+    --sh: 0 2px 16px rgba(13,43,31,.09);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sora', sans-serif; background: var(--gbg); color: var(--t1); min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, var(--g1) 0%, var(--g2) 100%);
+    padding: 20px 20px 16px; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 24px rgba(0,0,0,.28);
+  }
+  .hd-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .hd-icon {
+    width: 44px; height: 44px; background: var(--g4); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    flex-shrink: 0; box-shadow: 0 2px 10px rgba(57,196,122,.35);
+  }
+  .hd-info h1 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -.3px; }
+  .hd-info p  { font-size: 11px; color: var(--g5); margin-top: 2px; }
+  .hd-badge {
+    margin-left: auto; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+    border-radius: 8px; padding: 5px 11px; font-size: 12px; font-weight: 600;
+    color: var(--g5); font-family: 'JetBrains Mono', monospace;
+  }
+  .prog-row { display: flex; align-items: center; gap: 10px; }
+  .prog-lbl { font-size: 11px; color: var(--g5); white-space: nowrap; }
+  .prog-track { flex: 1; height: 8px; background: rgba(255,255,255,.15); border-radius: 99px; overflow: hidden; }
+  .prog-fill { height: 100%; background: linear-gradient(90deg, var(--g4), var(--g5)); border-radius: 99px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+  .prog-pct { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; }
+
+  /* BUSCA */
+  .busca-section { padding: 16px 16px 4px; }
+  .busca-label {
+    font-size: 10px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--t3); margin-bottom: 7px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .busca-label::before { content: ''; display: inline-block; width: 3px; height: 13px; background: var(--g4); border-radius: 99px; }
+  .busca-wrap {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--w); border: 2px solid var(--bd); border-radius: 13px;
+    padding: 11px 14px; box-shadow: var(--sh); transition: border-color .2s, box-shadow .2s;
+  }
+  .busca-wrap:focus-within { border-color: var(--g4); box-shadow: 0 0 0 4px rgba(57,196,122,.14); }
+  .busca-ico { font-size: 18px; flex-shrink: 0; }
+  .busca-wrap input {
+    border: none; outline: none; font-family: 'Sora', sans-serif;
+    font-size: 14px; color: var(--t1); width: 100%; background: transparent;
+  }
+  .busca-wrap input::placeholder { color: var(--t3); }
+  .busca-clear {
+    background: var(--gbg); border: 1px solid var(--bd); cursor: pointer;
+    font-size: 12px; color: var(--t3); flex-shrink: 0; padding: 3px 7px;
+    border-radius: 6px; display: none; font-weight: 600;
+  }
+  .busca-clear.show { display: block; }
+
+  /* CHIPS */
+  .chips-row { display: flex; gap: 7px; padding: 10px 16px 12px; overflow-x: auto; scrollbar-width: none; }
+  .chips-row::-webkit-scrollbar { display: none; }
+  .chip {
+    display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 99px;
+    font-size: 12px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
+    cursor: pointer; border: 2px solid transparent; transition: all .15s;
+  }
+  .chip.all  { background: var(--g1); color: #fff; }
+  .chip.done { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+  .chip.pend { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .chip.abs  { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .chip.active { box-shadow: 0 0 0 3px var(--g4); }
+  .chip-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .cd-done { background: #10b981; } .cd-pend { background: #f59e0b; } .cd-abs { background: #ef4444; }
+
+  /* BLOCOS */
+  .blocos { padding: 0 14px 40px; display: flex; flex-direction: column; gap: 11px; }
+
+  .bcard { background: var(--w); border-radius: var(--r); border: 1px solid var(--bd); box-shadow: var(--sh); overflow: hidden; transition: box-shadow .2s; }
+  .bcard:hover { box-shadow: 0 6px 24px rgba(13,43,31,.14); }
+
+  .bcard-head {
+    display: flex; align-items: center; gap: 10px; padding: 13px 15px; cursor: pointer;
+    background: linear-gradient(135deg, var(--g1) 0%, var(--g2) 100%); color: #fff;
+  }
+  .bnum { width: 38px; height: 38px; background: rgba(255,255,255,.13); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+  .btitle { font-weight: 700; font-size: 15px; flex: 1; }
+  .bmini { display: flex; gap: 5px; }
+  .mb { padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .mb-done { background: #d1fae5; color: #065f46; }
+  .mb-pend { background: #fef3c7; color: #92400e; }
+  .mb-abs  { background: #fee2e2; color: #991b1b; }
+  .bchev { font-size: 13px; opacity: .75; transition: transform .25s; }
+  .bcard.open .bchev { transform: rotate(180deg); }
+
+  .bprog { height: 3px; background: rgba(0,0,0,.06); }
+  .bprog-fill { height: 100%; background: linear-gradient(90deg, var(--g4), var(--g5)); transition: width .4s; }
+
+  .apts-wrap { display: none; padding: 12px; }
+  .bcard.open .apts-wrap { display: block; }
+
+  .andar-sec { margin-bottom: 12px; }
+  .andar-lbl {
+    font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--t3); padding: 0 2px 6px; display: flex; align-items: center; gap: 7px;
+  }
+  .andar-lbl::after { content: ''; flex: 1; height: 1px; background: var(--bd); }
+  .andar-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+
+  .apt-btn {
+    border: none; border-radius: 10px; padding: 9px 4px 7px;
+    font-family: 'Sora', sans-serif; cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    display: flex; flex-direction: column; align-items: center; gap: 3px; outline: none;
+  }
+  .apt-num { font-size: 12px; font-weight: 700; }
+  .apt-ico { font-size: 13px; }
+  .apt-btn.pendente  { background: #fef3c7; border: 2px solid #fcd34d; color: #92400e; }
+  .apt-btn.concluido { background: #d1fae5; border: 2px solid #6ee7b7; color: #065f46; }
+  .apt-btn.ausente   { background: #fee2e2; border: 2px solid #fca5a5; color: #991b1b; }
+  .apt-btn:hover { transform: scale(1.07); box-shadow: 0 4px 14px rgba(0,0,0,.1); position: relative; z-index: 1; }
+
+  /* MODAL */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.52); z-index: 200; align-items: flex-end; justify-content: center; }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--w); border-radius: 22px 22px 0 0; width: 100%; max-width: 480px;
+    padding: 22px 22px 28px; transform: translateY(110%);
+    transition: transform .32s cubic-bezier(.4,0,.2,1); max-height: 88vh; overflow-y: auto;
+  }
+  .overlay.open .modal { transform: translateY(0); }
+  .mhandle { width: 38px; height: 4px; background: var(--bd); border-radius: 99px; margin: 0 auto 18px; }
+  .mtitle { font-size: 18px; font-weight: 800; color: var(--g1); }
+  .msub   { font-size: 12px; color: var(--t3); margin: 3px 0 18px; }
+  .sbtn-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
+  .sbtn { padding: 13px 6px; border-radius: 11px; border: 2px solid transparent; font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; transition: all .15s; line-height: 1.5; }
+  .sbtn.pendente  { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .sbtn.concluido { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+  .sbtn.ausente   { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .sbtn.sel { box-shadow: 0 0 0 3px var(--g4); transform: scale(1.04); }
+  .obs-lbl { font-size: 13px; font-weight: 600; color: var(--t2); margin-bottom: 6px; }
+  .obs-inp { width: 100%; border: 2px solid var(--bd); border-radius: 11px; padding: 10px 13px; font-family: 'Sora', sans-serif; font-size: 13px; resize: vertical; min-height: 72px; outline: none; transition: border-color .15s; color: var(--t1); }
+  .obs-inp:focus { border-color: var(--g4); }
+  .mbtns { display: flex; gap: 10px; margin-top: 16px; }
+  .mbtn-cancel { flex: 1; padding: 12px; border: 2px solid var(--bd); background: var(--w); border-radius: 11px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--t2); }
+  .mbtn-save { flex: 2; padding: 12px; background: var(--g2); color: #fff; border: none; border-radius: 11px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s; }
+  .mbtn-save:hover { background: var(--g3); }
+
+  .empty { text-align: center; padding: 44px 20px; color: var(--t3); font-size: 14px; }
+  .empty .big { font-size: 40px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-top">
+    <div class="hd-icon">🏘️</div>
+    <div class="hd-info">
+      <h1>Cond. Residencial Garden</h1>
+      <p>Agente Comunitário de Saúde — Atualização de Cadastros</p>
+    </div>
+    <div class="hd-badge" id="hdBadge">176 aptos</div>
+  </div>
+  <div class="prog-row">
+    <span class="prog-lbl">Progresso geral</span>
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <span class="prog-pct" id="progPct">0%</span>
+  </div>
+</header>
+
+<div class="busca-section">
+  <div class="busca-label">Buscar folhas de cadastro</div>
+  <div class="busca-wrap">
+    <span class="busca-ico">📋</span>
+    <input type="text" id="buscaInput"
+           placeholder="Digite bloco, apartamento ou observação…"
+           oninput="onBusca(this.value)">
+    <button class="busca-clear" id="buscaClear" onclick="limparBusca()">✕ limpar</button>
+  </div>
+</div>
+
+<div class="chips-row">
+  <div class="chip all active" onclick="setFiltro('all',this)">🏠 Todos <span id="cAll">176</span></div>
+  <div class="chip done" onclick="setFiltro('concluido',this)"><span class="chip-dot cd-done"></span> Concluídos <span id="cDone">0</span></div>
+  <div class="chip pend" onclick="setFiltro('pendente',this)"><span class="chip-dot cd-pend"></span> Pendentes <span id="cPend">176</span></div>
+  <div class="chip abs"  onclick="setFiltro('ausente',this)"><span class="chip-dot cd-abs"></span> Ausentes <span id="cAbs">0</span></div>
+</div>
+
+<div class="blocos" id="blocos"></div>
+
+<div class="overlay" id="overlay" onclick="fecharOverlay(event)">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="mTitle">Apartamento</div>
+    <div class="msub"   id="mSub">Status do cadastro</div>
+    <div class="sbtn-grid">
+      <button class="sbtn pendente"  onclick="selStatus('pendente')">⏳<br>Pendente</button>
+      <button class="sbtn concluido" onclick="selStatus('concluido')">✅<br>Concluído</button>
+      <button class="sbtn ausente"   onclick="selStatus('ausente')">🔁<br>Ausente</button>
+    </div>
+    <div class="obs-lbl">Observação (opcional)</div>
+    <textarea class="obs-inp" id="obsInp" placeholder="Ex: morador viaja, endereço desatualizado…"></textarea>
+    <div class="mbtns">
+      <button class="mbtn-cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="mbtn-save"   onclick="salvar()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BLOCOS = 11;
+const APTS = [];
+for (let a = 1; a <= 4; a++) for (let u = 1; u <= 4; u++) APTS.push(`${a}0${u}`);
+
+let state = {};
+let cur = null, curStatus = null;
+let filtro = 'all', busca = '';
+let abertos = new Set();
+
+for (let b = 1; b <= BLOCOS; b++) {
+  state[b] = {};
+  APTS.forEach(ap => { state[b][ap] = { status: 'pendente', obs: '' }; });
+}
+
+function loadState() { try { const s = localStorage.getItem('garden_v3'); if (s) state = JSON.parse(s); } catch(e) {} }
+function saveState()  { try { localStorage.setItem('garden_v3', JSON.stringify(state)); } catch(e) {} }
+
+const ico = { pendente:'⏳', concluido:'✅', ausente:'🔁' };
+
+function getStats() {
+  let done=0, pend=0, abs=0;
+  for (let b=1; b<=BLOCOS; b++) APTS.forEach(ap => {
+    const s = state[b]?.[ap]?.status || 'pendente';
+    if (s==='concluido') done++; else if (s==='ausente') abs++; else pend++;
+  });
+  return { done, pend, abs, total: BLOCOS * APTS.length };
+}
+function getBStats(b) {
+  let done=0, pend=0, abs=0;
+  APTS.forEach(ap => {
+    const s = state[b]?.[ap]?.status || 'pendente';
+    if (s==='concluido') done++; else if (s==='ausente') abs++; else pend++;
+  });
+  return { done, pend, abs };
+}
+
+function updateHeader() {
+  const { done, pend, abs, total } = getStats();
+  const pct = Math.round(done / total * 100);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progPct').textContent = pct + '%';
+  document.getElementById('cAll').textContent = total;
+  document.getElementById('cDone').textContent = done;
+  document.getElementById('cPend').textContent = pend;
+  document.getElementById('cAbs').textContent = abs;
+}
+
+function onBusca(val) {
+  busca = val.trim().toLowerCase();
+  document.getElementById('buscaClear').classList.toggle('show', busca.length > 0);
+  render();
+}
+function limparBusca() {
+  document.getElementById('buscaInput').value = '';
+  busca = '';
+  document.getElementById('buscaClear').classList.remove('show');
+  render();
+}
+function setFiltro(f, el) {
+  filtro = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function render() {
+  const cont = document.getElementById('blocos');
+  cont.innerHTML = '';
+  let visible = 0;
+
+  for (let b = 1; b <= BLOCOS; b++) {
+    const bs = getBStats(b);
+    const pct = Math.round(bs.done / APTS.length * 100);
+
+    const visApts = APTS.filter(ap => {
+      const st  = state[b]?.[ap]?.status || 'pendente';
+      const obs = (state[b]?.[ap]?.obs || '').toLowerCase();
+      const matchStatus = filtro === 'all' || st === filtro;
+      const matchBusca  = !busca ||
+        `bloco ${b}`.includes(busca) ||
+        `ap ${ap}`.includes(busca) ||
+        ap.includes(busca) ||
+        obs.includes(busca);
+      return matchStatus && matchBusca;
+    });
+
+    if (visApts.length === 0) continue;
+    visible++;
+
+    const card = document.createElement('div');
+    card.className = 'bcard' + (abertos.has(b) ? ' open' : '');
+    card.id = `bc-${b}`;
+
+    const head = document.createElement('div');
+    head.className = 'bcard-head';
+    head.innerHTML = `
+      <div class="bnum">B${b}</div>
+      <div class="btitle">Bloco ${b}</div>
+      <div class="bmini">
+        <span class="mb mb-done">${bs.done}</span>
+        <span class="mb mb-pend">${bs.pend}</span>
+        ${bs.abs > 0 ? `<span class="mb mb-abs">${bs.abs}</span>` : ''}
+      </div>
+      <span class="bchev">▼</span>`;
+    head.onclick = () => toggleBloco(b);
+
+    const bp = document.createElement('div');
+    bp.className = 'bprog';
+    bp.innerHTML = `<div class="bprog-fill" style="width:${pct}%"></div>`;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'apts-wrap';
+
+    const porAndar = {1:[],2:[],3:[],4:[]};
+    visApts.forEach(ap => porAndar[ap[0]].push(ap));
+
+    [1,2,3,4].forEach(andar => {
+      if (!porAndar[andar].length) return;
+      const sec = document.createElement('div');
+      sec.className = 'andar-sec';
+      const lbl = document.createElement('div');
+      lbl.className = 'andar-lbl';
+      lbl.textContent = `${andar}º Andar`;
+      const grid = document.createElement('div');
+      grid.className = 'andar-grid';
+      porAndar[andar].forEach(ap => {
+        const st = state[b]?.[ap]?.status || 'pendente';
+        const btn = document.createElement('button');
+        btn.className = `apt-btn ${st}`;
+        btn.innerHTML = `<span class="apt-num">AP ${ap}</span><span class="apt-ico">${ico[st]}</span>`;
+        btn.onclick = () => abrirModal(b, ap);
+        grid.appendChild(btn);
+      });
+      sec.appendChild(lbl);
+      sec.appendChild(grid);
+      wrap.appendChild(sec);
+    });
+
+    card.appendChild(head);
+    card.appendChild(bp);
+    card.appendChild(wrap);
+    cont.appendChild(card);
+  }
+
+  if (visible === 0) {
+    cont.innerHTML = `<div class="empty"><div class="big">📋</div>Nenhuma folha encontrada${busca ? ` para "<strong>${busca}</strong>"` : ''}.</div>`;
+  }
+  updateHeader();
+}
+
+function toggleBloco(b) {
+  if (abertos.has(b)) abertos.delete(b); else abertos.add(b);
+  document.getElementById(`bc-${b}`)?.classList.toggle('open');
+}
+
+function abrirModal(b, ap) {
+  cur = { b, ap };
+  const st  = state[b]?.[ap]?.status || 'pendente';
+  const obs = state[b]?.[ap]?.obs || '';
+  curStatus = st;
+  document.getElementById('mTitle').textContent = `Bloco ${b} — AP ${ap}`;
+  document.getElementById('mSub').textContent   = `${ap[0]}º Andar  •  Toque para alterar o status`;
+  document.getElementById('obsInp').value = obs;
+  document.querySelectorAll('.sbtn').forEach(s => s.classList.remove('sel'));
+  document.querySelector(`.sbtn.${st}`).classList.add('sel');
+  document.getElementById('overlay').classList.add('open');
+}
+function selStatus(s) {
+  curStatus = s;
+  document.querySelectorAll('.sbtn').forEach(x => x.classList.remove('sel'));
+  document.querySelector(`.sbtn.${s}`).classList.add('sel');
+}
+function fecharModal() {
+  document.getElementById('overlay').classList.remove('open');
+  cur = null; curStatus = null;
+}
+function fecharOverlay(e) {
+  if (e.target === document.getElementById('overlay')) fecharModal();
+}
+function salvar() {
+  if (!cur || !curStatus) return;
+  const { b, ap } = cur;
+  if (!state[b]) state[b] = {};
+  state[b][ap] = { status: curStatus, obs: document.getElementById('obsInp').value.trim() };
+  saveState();
+  fecharModal();
+  render();
+}
+
+loadState();
+render();
+</script>
+</body>
+</html>
